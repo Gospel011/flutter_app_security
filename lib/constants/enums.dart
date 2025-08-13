@@ -1,0 +1,1 @@
+enum EnvKeyTypes {appName, appVersion, env}
