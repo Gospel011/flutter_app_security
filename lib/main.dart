@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:haptic_feedback/haptic_feedback.dart';
+import 'package:keyboard_actions/keyboard_actions.dart';
 import 'package:security_test/constants/enums.dart';
 import 'package:security_test/constants/env_keys.dart';
+import 'package:security_test/constants/mixins.dart';
+import 'package:security_test/widgets/my_keyboard_actions.dart';
+import 'package:security_test/widgets/my_textfield.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,12 +20,18 @@ class MyApp extends StatefulWidget {
   State<MyApp> createState() => _MyAppState();
 }
 
-class _MyAppState extends State<MyApp> {
+class _MyAppState extends State<MyApp> with HapticMixin {
   late final AppLifecycleListener _listener;
   bool blur = false;
+  late final FocusNode _focusNode;
+  late final FocusNode _focusNode_2;
+  late final FocusNode _focusNode_3;
   @override
   void initState() {
     super.initState();
+    _focusNode = FocusNode();
+    _focusNode_2 = FocusNode();
+    _focusNode_3 = FocusNode();
 
     _listener = AppLifecycleListener(
       onResume: () {
@@ -42,9 +53,7 @@ class _MyAppState extends State<MyApp> {
         blurScreen();
       },
       onShow: () {
-        print(
-          "SHOW",
-        ); //
+        print("SHOW"); //
       },
       onPause: () {
         print(
@@ -75,6 +84,9 @@ class _MyAppState extends State<MyApp> {
   @override
   void dispose() {
     _listener.dispose();
+    _focusNode.dispose();
+    _focusNode_2.dispose();
+    _focusNode_3.dispose();
     super.dispose();
   }
 
@@ -87,60 +99,183 @@ class _MyAppState extends State<MyApp> {
         title: 'Material App',
         home: Scaffold(
           appBar: AppBar(title: const Text('Material App Bar')),
-          body: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text('App Env: ${EnvKeys.getKey(EnvKeyTypes.env)}'),
-                Text('App Name: ${EnvKeys.getKey(EnvKeyTypes.appName)}'),
-                Text('App Version: ${EnvKeys.getKey(EnvKeyTypes.appVersion)}'),
-                Text('Map runtimeType: ${{"A": "B"}.runtimeType}'),
-                ElevatedButton(
-                  onPressed: () {
-                    // FlutterWindowManager.addFlags(
-                    //     FlutterWindowManager.FLAG_BLUR_BEHIND);
+          body: MyKeyboardActions(
+            focusNodes: [_focusNode, _focusNode_2, _focusNode_3],
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(height: 16),
 
-                    HapticFeedback.lightImpact();
-                  },
-                  child: Text("Light impact"),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    // FlutterWindowManager.addFlags(
-                    //     FlutterWindowManager.FLAG_BLUR_BEHIND);
+                  Text('App Env: ${EnvKeys.getKey(EnvKeyTypes.env)}'),
+                  Text('App Name: ${EnvKeys.getKey(EnvKeyTypes.appName)}'),
+                  Text(
+                    'App Version: ${EnvKeys.getKey(EnvKeyTypes.appVersion)}',
+                  ),
+                  Text('Map runtimeType: ${{"A": "B"}.runtimeType}'),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    spacing: 10,
+                    children: [
+                      ElevatedButton(
+                        onLongPress: () {
+                          print("LONG PRESSED");
+                        },
+                        onPressed: () {
+                          // FlutterWindowManager.addFlags(
+                          //     FlutterWindowManager.FLAG_BLUR_BEHIND);
 
-                    HapticFeedback.mediumImpact();
-                  },
-                  child: Text("Medium impact"),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    // FlutterWindowManager.addFlags(
-                    //     FlutterWindowManager.FLAG_BLUR_BEHIND);
+                          HapticFeedback.lightImpact();
+                        },
+                        child: Text("Light impact"),
+                      ),
+                      ElevatedButton(
+                        onPressed: () {
+                          // FlutterWindowManager.addFlags(
+                          //     FlutterWindowManager.FLAG_BLUR_BEHIND);
 
-                    HapticFeedback.heavyImpact();
-                  },
-                  child: Text("Heavy impact"),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    // FlutterWindowManager.addFlags(
-                    //     FlutterWindowManager.FLAG_BLUR_BEHIND);
+                          vibrate(HapticsType.light);
+                        },
+                        child: Text("Vibrate Light impact"),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    spacing: 10,
+                    children: [
+                      ElevatedButton(
+                        onPressed: () {
+                          // FlutterWindowManager.addFlags(
+                          //     FlutterWindowManager.FLAG_BLUR_BEHIND);
 
-                    HapticFeedback.selectionClick();
-                  },
-                  child: Text("Selection Click"),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    // FlutterWindowManager.addFlags(
-                    //     FlutterWindowManager.FLAG_BLUR_BEHIND);
+                          HapticFeedback.mediumImpact();
+                        },
+                        child: Text("Medium impact"),
+                      ),
+                      ElevatedButton(
+                        onPressed: () {
+                          // FlutterWindowManager.addFlags(
+                          //     FlutterWindowManager.FLAG_BLUR_BEHIND);
 
-                    HapticFeedback.vibrate();
-                  },
-                  child: Text("Vibrate"),
-                ),
-              ],
+                          vibrate(HapticsType.medium);
+                        },
+                        child: Text("Vibrate Medium impact"),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    spacing: 10,
+                    children: [
+                      ElevatedButton(
+                        onPressed: () {
+                          // FlutterWindowManager.addFlags(
+                          //     FlutterWindowManager.FLAG_BLUR_BEHIND);
+
+                          HapticFeedback.heavyImpact();
+                        },
+                        child: Text("Heavy impact"),
+                      ),
+                      ElevatedButton(
+                        onPressed: () {
+                          // FlutterWindowManager.addFlags(
+                          //     FlutterWindowManager.FLAG_BLUR_BEHIND);
+
+                          vibrate(HapticsType.heavy);
+                        },
+                        child: Text("Vibrate Heavy impact"),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      ElevatedButton(
+                        onPressed: () {
+                          // FlutterWindowManager.addFlags(
+                          //     FlutterWindowManager.FLAG_BLUR_BEHIND);
+
+                          HapticFeedback.selectionClick();
+                        },
+                        child: Text("Selection Click"),
+                      ),
+                      ElevatedButton(
+                        onPressed: () {
+                          // FlutterWindowManager.addFlags(
+                          //     FlutterWindowManager.FLAG_BLUR_BEHIND);
+
+                          vibrate(HapticsType.selection);
+                        },
+                        child: Text("Vibrate Selection Click"),
+                      ),
+                    ],
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      // FlutterWindowManager.addFlags(
+                      //     FlutterWindowManager.FLAG_BLUR_BEHIND);
+
+                      HapticFeedback.vibrate();
+                    },
+                    child: Text("Vibrate"),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      // FlutterWindowManager.addFlags(
+                      //     FlutterWindowManager.FLAG_BLUR_BEHIND);
+
+                      vibrate(HapticsType.rigid);
+                    },
+                    child: Text("Vibrate rigid"),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      // FlutterWindowManager.addFlags(
+                      //     FlutterWindowManager.FLAG_BLUR_BEHIND);
+
+                      vibrate(HapticsType.soft);
+                    },
+                    child: Text("Vibrate soft"),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      // FlutterWindowManager.addFlags(
+                      //     FlutterWindowManager.FLAG_BLUR_BEHIND);
+
+                      vibrate(HapticsType.success);
+                    },
+                    child: Text("Vibrate success"),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      // FlutterWindowManager.addFlags(
+                      //     FlutterWindowManager.FLAG_BLUR_BEHIND);
+
+                      vibrate(HapticsType.warning);
+                    },
+                    child: Text("Vibrate warning"),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      // FlutterWindowManager.addFlags(
+                      //     FlutterWindowManager.FLAG_BLUR_BEHIND);
+
+                      vibrate(HapticsType.error);
+                    },
+                    child: Text("Vibrate error"),
+                  ),
+
+                  SizedBox(height: 24),
+
+                  // MyTextfield(),
+                  TextField(focusNode: _focusNode),
+                  TextField(focusNode: _focusNode_2),
+                  TextField(focusNode: _focusNode_3),
+
+                  SizedBox(height: 64),
+                ],
+              ),
             ),
           ),
         ),
